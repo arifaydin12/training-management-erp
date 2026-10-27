@@ -4,7 +4,7 @@ A corporate training and employee management portal: plan training sessions, man
 
 It is a **Node.js / Express 5** REST API on **Microsoft SQL Server** with JWT authentication and role-based access control, plus a dependency-free single-page front end (vanilla ES modules, SVG charts) that the same server serves.
 
-**[Live demo](https://vaas125.github.io/training-management-erp/)** - runs entirely in your browser with sample data (no backend), sign in with one of the demo accounts shown on the login screen.
+**[Live demo](https://arifaydin12.github.io/training-management-erp/)** - runs entirely in your browser with sample data (no backend), sign in with one of the demo accounts shown on the login screen.
 
 ![Dashboard](screenshots/screenshot.png)
 
@@ -202,7 +202,7 @@ The suite uses `node:test` and `supertest` against **a real SQL Server** (the co
 
 ## Live demo (GitHub Pages)
 
-<https://vaas125.github.io/training-management-erp/>
+<https://arifaydin12.github.io/training-management-erp/>
 
 GitHub Pages cannot run Node.js or SQL Server, so the demo is a static build of the same front end with **demo mode** switched on:
 
@@ -221,4 +221,4 @@ GitHub Pages cannot run Node.js or SQL Server, so the demo is a static build of 
 
 ## License
 
-[MIT](LICENSE) © Arif Enes
+[MIT](LICENSE) © Arif Enes Aydin

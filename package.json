@@ -25,7 +25,7 @@
     "rbac",
     "dashboard"
   ],
-  "author": "Arif Enes",
+  "author": "Arif Enes Aydin",
   "license": "MIT",
   "dependencies": {
     "bcryptjs": "^2.4.3",
