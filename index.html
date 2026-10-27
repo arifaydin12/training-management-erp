@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akademi ERP | Kurumsal Eğitim Yönetimi</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            /* Kurumsal Renk Paleti */
+            --corp-dark: #0f172a;
+            /* Çok koyu lacivert (Sidebar) */
+            --corp-primary: #3b82f6;
+            /* Ana Aksiyon Mavisi */
+            --corp-accent: #f59e0b;
+            /* Uyarı/Önemli (Altın) */
+            --corp-success: #10b981;
+            /* Başarı Yeşili */
+            --corp-danger: #ef4444;
+            /* Hata Kırmızısı */
+
+            --bg-body: #f1f5f9;
+            /* Arka plan gri */
+            --bg-card: #ffffff;
+            /* Kart beyazı */
+
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            overflow: hidden;
+            /* Scroll içeride olacak */
+        }
+
+        /* --- LOGIN SCREEN --- */
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, var(--corp-dark) 0%, #1e3a8a 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            width: 400px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            text-align: center;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 14px;
+            margin: 10px 0;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: 0.2s;
+        }
+
+        .login-input:focus {
+            border-color: var(--corp-primary);
+            outline: none;
+        }
+
+        /* --- LAYOUT --- */
+        .app-layout {
+            display: flex;
+            height: 100vh;
+            display: none;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--corp-dark);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .logo-area {
+            height: 70px;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-bottom: 1px solid #1e293b;
+            color: white;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-links {
+            list-style: none;
+            padding: 20px 0;
+            margin: 0;
+        }
+
+        .nav-links li a {
+            display: flex;
+            align-items: center;
+            padding: 14px 24px;
+            color: #94a3b8;
+            text-decoration: none;
+            transition: 0.2s;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .nav-links li a:hover,
+        .nav-links li a.active {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border-right: 3px solid var(--corp-primary);
+        }
+
+        .nav-links i {
+            width: 24px;
+            margin-right: 10px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .top-bar {
+            height: 70px;
+            background: white;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .page-content {
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* --- COMPONENTS --- */
+        .card {
+            background: var(--bg-card);
+            border-radius: 8px;
+            box-shadow: var(--shadow-sm);
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .stat-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-val {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--corp-dark);
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 18px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--corp-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-danger {
+            background: #fee2e2;
+            color: var(--corp-danger);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: var(--text-main);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        thead th {
+            text-align: left;
+            padding: 12px 16px;
+            border-bottom: 2px solid var(--border-color);
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        tbody td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .bg-green {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .bg-orange {
+            background: #ffedd5;
+            color: #9a3412;
+        }
+
+        .bg-red {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .bg-gray {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(2px);
+        }
+
+        .modal-box {
+            background: white;
+            width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 10px;
+            padding: 30px;
+            animation: slideUp 0.3s ease;
+            box-shadow: var(--shadow-md);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="login-screen">
+        <div class="login-card">
+            <div style="font-size: 3rem; color: var(--corp-primary); margin-bottom: 15px;">
+                <i class="fa-solid fa-building-columns"></i>
+            </div>
+            <h2 style="margin: 0 0 10px 0; color: var(--corp-dark);">Kurumsal Portal</h2>
+            <p style="color: var(--text-muted); margin-bottom: 30px;">Eğitim ve Gelişim Yönetim Sistemi</p>
+            <form onsubmit="handleLogin(event)">
+                <input type="text" id="username" class="login-input" placeholder="Kullanıcı Adı" autocomplete="username"
+                    required>
+                <input type="password" id="password" class="login-input" placeholder="Şifre" autocomplete="current-password"
+                    required>
+                <button type="submit" class="btn btn-primary"
+                    style="width: 100%; justify-content: center; padding: 14px; margin-top: 10px;">
+                    Güvenli Giriş
+                </button>
+            </form>
+            <div style="margin-top: 20px; font-size: 0.8rem; color: #94a3b8;">v2.1.0 Enterprise Edition</div>
+        </div>
+    </div>
+
+    <div class="app-layout" id="app">
+        <nav class="sidebar">
+            <div class="logo-area">
+                <i class="fa-solid fa-cube" style="color: var(--corp-primary); margin-right: 10px;"></i>
+                AKADEMİ <span style="font-weight: 300; margin-left: 4px;">ERP</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#" onclick="route('dashboard', this)" class="active"><i class="fa-solid fa-chart-line"></i>
+                        Genel Bakış</a></li>
+                <li><a href="#" onclick="route('personel', this)"><i class="fa-solid fa-users"></i> Personel
+                        Yönetimi</a></li>
+                <li><a href="#" onclick="route('egitim', this)"><i class="fa-solid fa-chalkboard-user"></i> Eğitim
+                        Takvimi</a></li>
+                <li style="margin-top: auto; border-top: 1px solid #1e293b;"><a href="#" onclick="logout()"><i
+                            class="fa-solid fa-right-from-bracket"></i> Çıkış Yap</a></li>
+            </ul>
+        </nav>
+
+        <div class="main-content">
+            <div class="top-bar">
+                <h3 id="page-title" style="margin: 0; font-weight: 600;">Genel Bakış</h3>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="text-align: right;">
+                        <div style="font-weight: 600; font-size: 0.9rem;" id="user-name">Kullanıcı</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);" id="user-role">Yetki</div>
+                    </div>
+                    <div
+                        style="width: 40px; height: 40px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page-content">
+
+                <div id="page-dashboard" class="view-section">
+                    <div class="grid-3">
+                        <div class="card stat-card">
+                            <div>
+                                <div class="stat-val" id="stat-active-emp">0</div>
+                                <div class="stat-label">Aktif Personel</div>
+                            </div>
+                            <div class="stat-icon" style="background: #eff6ff; color: var(--corp-primary);"><i
+                                    class="fa-solid fa-users"></i></div>
+                        </div>
+                        <div class="card stat-card">
+                            <div>
+                                <div class="stat-val" id="stat-upcoming-tr">0</div>
+                                <div class="stat-label">Yaklaşan Eğitimler</div>
+                            </div>
+                            <div class="stat-icon" style="background: #fff7ed; color: var(--corp-accent);"><i
+                                    class="fa-regular fa-calendar-check"></i></div>
+                        </div>
+                        <div class="card stat-card">
+                            <div>
+                                <div class="stat-val" id="stat-budget">0 ₺</div>
+                                <div class="stat-label">Yıllık Bütçe</div>
+                            </div>
+                            <div class="stat-icon" style="background: #f0fdf4; color: var(--corp-success);"><i
+                                    class="fa-solid fa-wallet"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="grid-3" style="grid-template-columns: 2fr 1fr; margin-top: 0;">
+                        <div class="card">
+                            <h4 style="margin-top: 0;">Son Aktiviteler</h4>
+                            <table class="table" id="table-recent">
+                                <thead>
+                                    <tr>
+                                        <th>Eğitim Adı</th>
+                                        <th>Tarih</th>
+                                        <th>Durum</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div class="card">
+                            <h4 style="margin-top: 0;">Departman Dağılımı</h4>
+                            <canvas id="deptChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="page-personel" class="view-section" style="display: none;">
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                            <input type="text" id="search-emp" placeholder="İsim veya Departman Ara..."
+                                class="form-control" style="width: 300px;" onkeyup="filterPersonel()">
+                            <button class="btn btn-primary" onclick="openModal('modal-emp')"><i
+                                    class="fa-solid fa-user-plus"></i> Yeni Personel</button>
+                        </div>
+                        <div class="table-container">
+                            <table id="table-personel">
+                                <thead>
+                                    <tr>
+                                        <th>TC Kimlik</th>
+                                        <th>Personel</th>
+                                        <th>Departman</th>
+                                        <th>Görev</th>
+                                        <th>Durum</th>
+                                        <th style="text-align: right;">İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="page-egitim" class="view-section" style="display: none;">
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <button class="btn btn-primary" onclick="openModal('modal-training')"><i
+                                        class="fa-solid fa-plus"></i> Yeni Eğitim Planla</button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table id="table-training">
+                                <thead>
+                                    <tr>
+                                        <th>Eğitim Detayı</th>
+                                        <th>Kategori</th>
+                                        <th>Tarih</th>
+                                        <th>Bütçe</th>
+                                        <th>Katılımcı</th>
+                                        <th>Durum</th>
+                                        <th style="text-align: right;">Yönetim</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-emp" class="modal-overlay">
+        <div class="modal-box">
+            <h3 style="margin-top: 0;">Personel Kartı</h3>
+            <form onsubmit="savePersonel(event)">
+                <input type="hidden" id="emp-id">
+                <div class="form-group"><label class="form-label">TC Kimlik No</label><input type="text" id="emp-tc"
+                        class="form-control" required maxlength="11"></div>
+                <div class="form-group"><label class="form-label">Ad Soyad</label><input type="text" id="emp-name"
+                        class="form-control" required></div>
+                <div class="form-group"><label class="form-label">Departman</label><input type="text" id="emp-dept"
+                        class="form-control" required></div>
+                <div class="form-group"><label class="form-label">Görev</label><input type="text" id="emp-role"
+                        class="form-control" required></div>
+                <div class="form-group"><label class="form-label">E-Posta</label><input type="email" id="emp-email"
+                        class="form-control" required></div>
+                <div class="form-group" id="emp-status-div" style="display:none;">
+                    <label class="form-label">Durum</label>
+                    <select id="emp-status" class="form-control">
+                        <option value="Aktif">Aktif</option>
+                        <option value="Pasif">Pasif</option>
+                        <option value="İzinli">İzinli</option>
+                    </select>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modal-emp')">İptal</button>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-training" class="modal-overlay">
+        <div class="modal-box">
+            <h3 style="margin-top: 0;">Eğitim Planlama Formu</h3>
+            <form onsubmit="saveTraining(event)">
+                <div class="form-group"><label class="form-label">Eğitim Adı</label><input type="text" name="name"
+                        class="form-control" required></div>
+                <div class="form-group"><label class="form-label">Kategori</label>
+                    <select name="category" class="form-control">
+                        <option>Teknik</option>
+                        <option>Yasal</option>
+                        <option>Kişisel Gelişim</option>
+                        <option>Soft Skill</option>
+                    </select>
+                </div>
+                <div class="form-group"><label class="form-label">Tarih</label><input type="datetime-local" name="date"
+                        class="form-control" required></div>
+                <div class="form-group"><label class="form-label">Bütçe (TL)</label><input type="number" name="budget"
+                        class="form-control" value="0"></div>
+                <div class="form-group"><label class="form-label">Eğitmen / Kurum</label><input type="text"
+                        name="trainer" class="form-control"></div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary"
+                        onclick="closeModal('modal-training')">İptal</button>
+                    <button type="submit" class="btn btn-primary">Oluştur</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-participants" class="modal-overlay">
+        <div class="modal-box" style="width: 600px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin:0;">Katılımcı Listesi</h3>
+                <button class="btn btn-sm btn-secondary" onclick="closeModal('modal-participants')">Kapat</button>
+            </div>
+            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                <h5 style="margin: 0 0 10px 0;">Personel Ekle</h5>
+                <div style="display: flex; gap: 10px;">
+                    <select id="assign-personel-select" class="form-control" style="font-size: 0.9rem;">
+                        <option value="">Personel Seçiniz...</option>
+                    </select>
+                    <button class="btn btn-primary btn-sm" onclick="assignPersonel()">Ekle</button>
+                </div>
+            </div>
+            <input type="hidden" id="current-training-id">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Ad Soyad</th>
+                        <th>Departman</th>
+                        <th>İşlem</th>
+                    </tr>
+                </thead>
+                <tbody id="participant-list"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // --- DÜZELTME BAŞLANGICI ---
+        // API Sabitini sadece host ve port içerecek şekilde güncelledik.
+        const API = "http://localhost:3000";
+        // --- DÜZELTME SONU ---
+
+        let personelCache = [];
+        let chartInstance = null;
+
+        // --- AUTH & INIT ---
+        async function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+
+            try {
+                // --- DÜZELTME BAŞLANGICI: API çağrısına '/api' önekini ekledik ---
+                const res = await fetch(`${API}/api/login`, {
+                    // --- DÜZELTME SONU ---
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: u, password: p })
+                });
+
+                // Önce JSON yanıtını alıyoruz. Sunucu 401 hatasında bile JSON gövdesi döndürüyor.
+                const data = await res.json();
+
+                // HTTP durum kodu 200-299 aralığında değilse (res.ok = false, örn. 401) VEYA 
+                // HTTP 200 gelmesine rağmen sunucunun kendisi success: false döndürdüyse hata göster.
+                if (!res.ok || !data.success) {
+                    const msg = data.message || 'Giriş başarısız oldu.';
+                    if (typeof Swal !== 'undefined') return Swal.fire('Hata', msg, 'error');
+                    return alert('Hata: ' + msg);
+                }
+
+                // Giriş başarılıysa devam et.
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('app').style.display = 'flex';
+                document.getElementById('user-name').innerText = data.user.name;
+                document.getElementById('user-role').innerText = data.user.role;
+                loadDashboard();
+
+            } catch (error) {
+                console.error("Giriş işlemi sırasında hata:", error);
+                const msg = 'Sunucuya erişilemiyor, API adresi hatalı veya sunucu çalışmıyor. (Lütfen server.js dosyasını çalıştırdığınızdan emin olun)';
+
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire('Bağlantı Hatası', msg, 'error');
+                } else {
+                    alert('Bağlantı Hatası: ' + msg);
+                }
+            }
+        }
+
+        function logout() { location.reload(); }
+
+        function route(page, el) {
+            document.querySelectorAll('.view-section').forEach(d => d.style.display = 'none');
+            document.getElementById(`page-${page}`).style.display = 'block';
+            document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+            if (el) el.classList.add('active');
+
+            const titles = { 'dashboard': 'Genel Bakış', 'personel': 'Personel Yönetimi', 'egitim': 'Eğitim Takvimi' };
+            document.getElementById('page-title').innerText = titles[page];
+
+            if (page === 'personel') loadPersonel();
+            if (page === 'egitim') loadTrainings();
+            if (page === 'dashboard') loadDashboard();
+        }
+
+        // --- DASHBOARD ---
+        async function loadDashboard() {
+            // --- DÜZELTME ---
+            const res = await fetch(`${API}/api/dashboard`);
+            // --- DÜZELTME SONU ---
+            const data = await res.json();
+
+            document.getElementById('stat-active-emp').innerText = data.stats.ActivePersonel;
+            document.getElementById('stat-upcoming-tr').innerText = data.stats.UpcomingTraining;
+            document.getElementById('stat-budget').innerText = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(data.stats.TotalBudget);
+
+            // Tabloyu doldur
+            const tbody = document.querySelector('#table-recent tbody');
+            tbody.innerHTML = data.recent.map(r => `
+                <tr>
+                    <td style="font-weight: 500">${r.EgitimAdi}</td>
+                    <td>${new Date(r.Tarih).toLocaleDateString('tr-TR')}</td>
+                    <td><span class="status-badge ${getStatusColor(r.Durum)}">${r.Durum}</span></td>
+                </tr>
+            `).join('');
+
+            // Grafik
+            const ctx = document.getElementById('deptChart').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.departments.map(d => d.Departman),
+                    datasets: [{
+                        data: data.departments.map(d => d.Count),
+                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#6366f1', '#ef4444']
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'right' } } }
+            });
+        }
+
+        // --- PERSONEL ---
+        async function loadPersonel() {
+            // --- DÜZELTME ---
+            const res = await fetch(`${API}/api/personel`);
+            // --- DÜZELTME SONU ---
+            personelCache = await res.json();
+            renderPersonel(personelCache);
+        }
+
+        function renderPersonel(list) {
+            const tbody = document.querySelector('#table-personel tbody');
+            tbody.innerHTML = list.map(p => `
+                <tr>
+                    <td>${p.TC}</td>
+                    <td>
+                        <div style="font-weight: 600; color: var(--corp-dark);">${p.AdSoyad}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">${p.Email}</div>
+                    </td>
+                    <td>${p.Departman}</td>
+                    <td>${p.Gorev}</td>
+                    <td><span class="status-badge ${p.Durum === 'Aktif' ? 'bg-green' : 'bg-red'}">${p.Durum}</span></td>
+                    <td style="text-align: right;">
+                        <button class="btn btn-sm btn-secondary" onclick="editPersonel(${p.ID})"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="deletePersonel(${p.ID})"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterPersonel() {
+            const val = document.getElementById('search-emp').value.toLowerCase();
+            const filtered = personelCache.filter(p => p.AdSoyad.toLowerCase().includes(val) || p.Departman.toLowerCase().includes(val));
+            renderPersonel(filtered);
+        }
+
+        // Personel CRUD
+        function editPersonel(id) {
+            const p = personelCache.find(x => x.ID === id);
+            document.getElementById('emp-id').value = p.ID;
+            document.getElementById('emp-tc').value = p.TC;
+            document.getElementById('emp-tc').disabled = true;
+            document.getElementById('emp-name').value = p.AdSoyad;
+            document.getElementById('emp-dept').value = p.Departman;
+            document.getElementById('emp-role').value = p.Gorev;
+            document.getElementById('emp-email').value = p.Email;
+            document.getElementById('emp-status').value = p.Durum;
+            document.getElementById('emp-status-div').style.display = 'block';
+            openModal('modal-emp');
+        }
+
+        async function savePersonel(e) {
+            e.preventDefault();
+            const id = document.getElementById('emp-id').value;
+            const payload = {
+                tc: document.getElementById('emp-tc').value,
+                name: document.getElementById('emp-name').value,
+                dept: document.getElementById('emp-dept').value,
+                role: document.getElementById('emp-role').value,
+                email: document.getElementById('emp-email').value,
+                status: document.getElementById('emp-status').value
+            };
+
+            const method = id ? 'PUT' : 'POST';
+            // --- DÜZELTME ---
+            const url = id ? `${API}/api/personel/${id}` : `${API}/api/personel`;
+            // --- DÜZELTME SONU ---
+
+            await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            closeModal('modal-emp');
+            loadPersonel();
+            if (!id) e.target.reset(); // Sadece yeniyse temizle
+            Swal.fire('Başarılı', 'İşlem kaydedildi.', 'success');
+        }
+
+        async function deletePersonel(id) {
+            if (confirm('Bu personeli silmek istediğinize emin misiniz?')) {
+                // --- DÜZELTME ---
+                await fetch(`${API}/api/personel/${id}`, { method: 'DELETE' });
+                // --- DÜZELTME SONU ---
+                loadPersonel();
+            }
+        }
+
+        // --- EĞİTİM & ATAMA ---
+        async function loadTrainings() {
+            // --- DÜZELTME ---
+            const res = await fetch(`${API}/api/egitim`);
+            // --- DÜZELTME SONU ---
+            const data = await res.json();
+            const tbody = document.querySelector('#table-training tbody');
+            tbody.innerHTML = data.map(t => `
+                <tr>
+                    <td>
+                        <div style="font-weight: 600;">${t.EgitimAdi}</div>
+                        <small style="color: var(--text-muted);"><i class="fa-solid fa-user-tie"></i> ${t.Egitmen}</small>
+                    </td>
+                    <td>${t.Kategori}</td>
+                    <td>${new Date(t.Tarih).toLocaleString('tr-TR')}</td>
+                    <td>${t.Butce} ₺</td>
+                    <td><span class="status-badge bg-gray"><i class="fa-solid fa-users"></i> ${t.KatilimciSayisi}</span></td>
+                    <td><span class="status-badge ${getStatusColor(t.Durum)}">${t.Durum}</span></td>
+                    <td style="text-align: right;">
+                        <button class="btn btn-sm btn-primary" onclick="openParticipants(${t.ID})" title="Katılımcı Yönetimi"><i class="fa-solid fa-list-check"></i></button>
+                        ${t.Durum === 'Planlandı' ? `<button class="btn btn-sm btn-secondary" onclick="updateTrainingStatus(${t.ID}, 'Tamamlandı')" title="Tamamla"><i class="fa-solid fa-check"></i></button>` : ''}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function saveTraining(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            // --- DÜZELTME ---
+            await fetch(`${API}/api/egitim`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            // --- DÜZELTME SONU ---
+            closeModal('modal-training');
+            loadTrainings();
+            Swal.fire('Planlandı', 'Eğitim takvime işlendi.', 'success');
+        }
+
+        async function updateTrainingStatus(id, status) {
+            // --- DÜZELTME ---
+            await fetch(`${API}/api/egitim/durum/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) });
+            // --- DÜZELTME SONU ---
+            loadTrainings();
+        }
+
+        // Katılımcı Yönetimi
+        async function openParticipants(egitimId) {
+            document.getElementById('current-training-id').value = egitimId;
+            openModal('modal-participants');
+
+            // Personel listesini select'e doldur
+            if (personelCache.length === 0) await loadPersonel();
+            const sel = document.getElementById('assign-personel-select');
+            sel.innerHTML = '<option value="">Personel Seçiniz...</option>' +
+                personelCache.map(p => `<option value="${p.ID}">${p.AdSoyad} (${p.Departman})</option>`).join('');
+
+            loadParticipantsList(egitimId);
+        }
+
+        async function loadParticipantsList(egitimId) {
+            // --- DÜZELTME ---
+            const res = await fetch(`${API}/api/egitim/${egitimId}/katilimcilar`);
+            // --- DÜZELTME SONU ---
+            const data = await res.json();
+            document.getElementById('participant-list').innerHTML = data.map(p => `
+                <tr>
+                    <td>${p.AdSoyad}</td>
+                    <td>${p.Departman}</td>
+                    <td><button class="btn btn-sm btn-danger" onclick="removeParticipant(${p.ID})"><i class="fa-solid fa-xmark"></i></button></td>
+                </tr>
+            `).join('');
+        }
+
+        async function assignPersonel() {
+            const egitimId = document.getElementById('current-training-id').value;
+            const personelId = document.getElementById('assign-personel-select').value;
+
+            if (!personelId) return Swal.fire('Uyarı', 'Lütfen personel seçin.', 'warning');
+
+            // --- DÜZELTME ---
+            const res = await fetch(`${API}/api/atama`, {
+                // --- DÜZELTME SONU ---
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ egitimId, personelId })
+            });
+            const result = await res.json();
+
+            if (result.success) {
+                loadParticipantsList(egitimId);
+                loadTrainings(); // Sayıları güncellemek için
+            } else {
+                Swal.fire('Hata', result.message, 'error');
+            }
+        }
+
+        async function removeParticipant(personelId) {
+            const egitimId = document.getElementById('current-training-id').value;
+            // --- DÜZELTME ---
+            await fetch(`${API}/api/atama`, {
+                // --- DÜZELTME SONU ---
+                method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ egitimId, personelId })
+            });
+            loadParticipantsList(egitimId);
+            loadTrainings();
+        }
+
+        // --- UTILS ---
+        function getStatusColor(status) {
+            if (status === 'Planlandı') return 'bg-orange';
+            if (status === 'Tamamlandı') return 'bg-green';
+            return 'bg-red';
+        }
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    </script>
+</body>
+
+</html>
