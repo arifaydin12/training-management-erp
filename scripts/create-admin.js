@@ -1,35 +1,32 @@
 // Creates an application user with a bcrypt-hashed password.
-// Usage: npm run create-admin -- admin "Full Name" "a-strong-password"
-require('dotenv').config();
+// Usage: npm run create-admin -- <username> "<Full Name>" "<password>" [admin|hr_manager|viewer]
+'use strict';
 
-const sql = require('mssql');
-const bcrypt = require('bcryptjs');
+const { loadConfig } = require('../src/config');
+const db = require('../src/db/pool');
+const users = require('../src/services/users.service');
+const { createUser } = require('../src/validation/schemas');
 
 (async () => {
-    const [username, fullName, password] = process.argv.slice(2);
-    if (!username || !fullName || !password) {
-        console.error('Usage: npm run create-admin -- <username> "<Full Name>" "<password>"');
-        process.exit(1);
-    }
+  const [username, fullName, password, role = 'admin'] = process.argv.slice(2);
+  if (!username || !fullName || !password) {
+    console.error('Usage: npm run create-admin -- <username> "<Full Name>" "<password>" [admin|hr_manager|viewer]');
+    process.exitCode = 1;
+    return;
+  }
 
-    const pool = await sql.connect({
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        server: process.env.DB_SERVER || 'localhost',
-        database: process.env.DB_NAME || 'OgrenciEgitimDB',
-        options: { encrypt: false, trustServerCertificate: true }
-    });
+  const parsed = createUser.safeParse({ username, fullName, password, role });
+  if (!parsed.success) {
+    for (const issue of parsed.error.issues) console.error(`- ${issue.path.join('.')}: ${issue.message}`);
+    process.exitCode = 1;
+    return;
+  }
 
-    const hash = await bcrypt.hash(password, 10);
-    await pool.request()
-        .input('u', username)
-        .input('h', hash)
-        .input('n', fullName)
-        .query("INSERT INTO Kullanicilar (KullaniciAdi, SifreHash, AdSoyad, Rol) VALUES (@u, @h, @n, N'Admin')");
-
-    console.log(`User created: ${username}`);
-    await pool.close();
-})().catch(err => {
+  const created = await users.create(parsed.data, { rounds: loadConfig().bcryptRounds });
+  console.log(`User created: ${created.username} (${created.role})`);
+})()
+  .catch((err) => {
     console.error(err.message);
-    process.exit(1);
-});
+    process.exitCode = 1;
+  })
+  .finally(() => db.close());

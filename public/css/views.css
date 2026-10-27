@@ -1,0 +1,15 @@
+/* View-specific refinements */
+.profile-head { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.profile-head h1 { margin-bottom: 4px; }
+.profile-head .meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; color: var(--muted); font-size: 0.9rem; }
+
+.workflow { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.attendance-select { min-width: 130px; }
+
+.table-note { padding: 12px 20px; font-size: 0.85rem; color: var(--muted); background: var(--surface-2); border-bottom: 1px solid var(--border); }
+
+.audit-action { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.82rem; background: var(--neutral-soft); padding: 1px 7px; border-radius: 5px; }
+
+.chart-card .card-body { padding-top: 8px; }
+.empty-inline { padding: 28px 20px; color: var(--muted); text-align: center; }

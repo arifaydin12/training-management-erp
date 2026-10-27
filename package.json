@@ -1,13 +1,30 @@
 {
   "name": "training-management-erp",
-  "version": "1.0.0",
-  "description": "Corporate training & personnel management portal (Node.js, Express, SQL Server)",
+  "version": "2.0.0",
+  "description": "Corporate training & employee management portal: Express 5 + SQL Server API, JWT auth with role-based access, and a vanilla-JS single-page app",
   "main": "server.js",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "start": "node server.js",
-    "create-admin": "node scripts/create-admin.js"
+    "dev": "node --watch server.js",
+    "db:init": "node scripts/db-init.js",
+    "seed": "node scripts/seed.js",
+    "create-admin": "node scripts/create-admin.js",
+    "build:demo": "node scripts/build-demo.js",
+    "serve:demo": "node scripts/serve-static.js docs 4173 /training-management-erp/",
+    "test": "node --test"
   },
-  "keywords": ["erp", "training-management", "express", "mssql", "dashboard"],
+  "keywords": [
+    "erp",
+    "training-management",
+    "express",
+    "mssql",
+    "jwt",
+    "rbac",
+    "dashboard"
+  ],
   "author": "Arif Enes",
   "license": "MIT",
   "dependencies": {
@@ -15,6 +32,14 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^5.2.1",
-    "mssql": "^12.2.0"
+    "express-rate-limit": "^8.7.1",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.12.1",
+    "mssql": "^12.2.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "supertest": "^7.3.1"
   }
 }
